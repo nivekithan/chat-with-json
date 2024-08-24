@@ -1,14 +1,12 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
+import { useLoaderData } from "@remix-run/react";
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { createChatWithJsonFetch } from "~/lib/chatWithJson";
+import { useGenerateJsonSchema } from "~/lib/generateJsonSchema";
+import { useChat } from "ai/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -26,7 +24,15 @@ type JsonContent =
       error: string;
     }
   | null
-  | { type: "success"; content: unknown };
+  | { type: "success"; content: string };
+
+export async function clientLoader() {
+  const { run } = await import("json_typegen_wasm");
+  const openaiApiKey = localStorage.getItem("openaiApiKey") ?? null;
+
+  return { run, openaiApiKey };
+}
+
 export default function Index() {
   const [jsonContent, setJsonContent] = useState<JsonContent>(null);
 
@@ -43,8 +49,8 @@ export default function Index() {
     const content = await file.text();
 
     try {
-      const json = JSON.parse(content);
-      setJsonContent({ type: "success", content: json });
+      JSON.parse(content);
+      setJsonContent({ type: "success", content: content });
     } catch (error) {
       if (error instanceof Error) {
         setJsonContent({
@@ -77,6 +83,38 @@ export default function Index() {
       </div>
     );
   } else {
-    return <pre>{JSON.stringify(jsonContent.content, null, 2)}</pre>;
+    return <ChatWithJson json={jsonContent.content} />;
   }
+}
+
+function ChatWithJson({ json }: { json: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { run } = useLoaderData() as any;
+  const { openaiApiKey } = useLoaderData<typeof clientLoader>();
+
+  const schema = useGenerateJsonSchema({ jsonString: json, run });
+
+  const { handleSubmit, handleInputChange, messages, input } = useChat({
+    fetch: createChatWithJsonFetch({ json: json, openaiApiKey, schema }),
+  });
+
+  return (
+    <div className="px-[10%] py-[5%]">
+      <div>
+        <pre>{JSON.stringify(messages, null, 2)}</pre>
+      </div>
+      <div>
+        <form onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            name="prompt"
+            id="prompt"
+            placeholder="Chat with JSON"
+            value={input}
+            onChange={handleInputChange}
+          />
+        </form>
+      </div>
+    </div>
+  );
 }

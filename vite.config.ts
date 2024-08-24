@@ -4,6 +4,7 @@ import {
 } from "@remix-run/dev";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import vitePluginWasm from "vite-plugin-wasm";
 
 export default defineConfig({
   server: {
@@ -11,6 +12,7 @@ export default defineConfig({
   },
   plugins: [
     remixCloudflareDevProxy(),
+    vitePluginWasm(),
     remix({
       future: {
         v3_fetcherPersist: true,
