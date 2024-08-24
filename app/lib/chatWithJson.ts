@@ -14,6 +14,7 @@ export async function chatWithJson({
   prompt: CoreMessage[];
 }) {
   const result = await streamText({
+    experimental_toolCallStreaming: true,
     model: createOpenAI({ compatibility: "strict", apiKey: openaiApiKey })(
       "gpt-4o"
     ),
