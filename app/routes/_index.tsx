@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -24,9 +24,9 @@ export const meta: MetaFunction = () => {
 
 type JsonContent =
   | {
-    type: "error";
-    error: string;
-  }
+      type: "error";
+      error: string;
+    }
   | null
   | { type: "success"; content: string };
 
@@ -98,9 +98,14 @@ function ChatWithJson({ json }: { json: string }) {
 
   const schema = useGenerateJsonSchema({ jsonString: json, run });
 
+  const chatWithJsonFetch = useMemo(
+    () => createChatWithJsonFetch({ json: json, openaiApiKey, schema }),
+    [json, openaiApiKey, schema]
+  );
+
   const { handleSubmit, handleInputChange, messages, input } = useChat({
     maxToolRoundtrips: 5,
-    fetch: createChatWithJsonFetch({ json: json, openaiApiKey, schema }),
+    fetch: chatWithJsonFetch,
   });
 
   return (
@@ -206,7 +211,7 @@ function ToolInvocation({
       </Button>
 
       {isOpen ? (
-        <div className={"p-2 flex flex-col gap-y-2"}>
+        <div className={"p-4 flex flex-col gap-y-2 overflow-auto"}>
           <p className="font-bold text-muted-foreground">
             {HumanReadableTool[toolName]?.resultDescription || "Result:"}
           </p>

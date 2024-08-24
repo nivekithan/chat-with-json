@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToCoreMessages, CoreMessage, streamText, tool } from "ai";
 import { z } from "zod";
+import { getErrorMessage } from "./utils/error";
 
 export async function chatWithJson({
   json,
@@ -33,11 +34,17 @@ export async function chatWithJson({
         }),
 
         async execute({ code }: { code: string }) {
-          const result = new Function(
-            `const __jsonData = ${json};\n` + code + "\nreturn __result;"
-          )();
+          try {
+            const result = new Function(
+              `const __jsonData = ${json};\n` + code + "\nreturn __result;"
+            )();
 
-          return result;
+            return result;
+          } catch (error) {
+            const errorMessage = getErrorMessage(error);
+
+            return `There was an error executing the code: ${errorMessage}`;
+          }
         },
       }),
     },
@@ -57,7 +64,6 @@ export function createChatWithJsonFetch({
   json: string;
 }) {
   const chatWithJsonFetch: typeof fetch = async (request, options) => {
-    console.log("Fetching chat with json");
     if (!openaiApiKey) {
       console.log("No openai api key");
       return new Response("No openai api key");
