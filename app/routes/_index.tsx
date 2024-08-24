@@ -109,23 +109,26 @@ function ChatWithJson({ json }: { json: string }) {
   });
 
   return (
-    <div className="px-[10%] py-[5%]">
+    <div className="px-[10%] pt-4">
       <div>
         <MessageList messages={messages} />
         {/* <pre>{JSON.stringify(messages, null, 2)}</pre> */}
+        <div className="w-full h-[72px]"></div>
       </div>
 
-      <div className="mt-24">
-        <form onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            name="prompt"
-            id="prompt"
-            placeholder="Chat with JSON"
-            value={input}
-            onChange={handleInputChange}
-          />
-        </form>
+      <div className="fixed left-[10%] right-[10%] bottom-0 py-4 h-[72px] bg-background">
+        <div>
+          <form onSubmit={handleSubmit}>
+            <Input
+              type="text"
+              name="prompt"
+              id="prompt"
+              placeholder="Chat with JSON"
+              value={input}
+              onChange={handleInputChange}
+            />
+          </form>
+        </div>
       </div>
     </div>
   );

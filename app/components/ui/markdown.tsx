@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils/style.ts";
 
 export function Markdown({ content }: { content: string }) {
   return (
-    <div className="prose prose-zinc dark:prose-invert w-[115ch]">
+    <div className="prose prose-zinc dark:prose-invert max-w-full">
       <RMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[Rhighlight]}
