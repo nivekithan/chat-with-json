@@ -28,7 +28,7 @@ type JsonContent =
       error: string;
     }
   | null
-  | { type: "success"; content: string };
+  | { type: "success"; content: string; fileName: string };
 
 export async function clientLoader() {
   const { run } = await import("json_typegen_wasm");
@@ -54,7 +54,11 @@ export default function Index() {
 
     try {
       JSON.parse(content);
-      setJsonContent({ type: "success", content: content });
+      setJsonContent({
+        type: "success",
+        content: content,
+        fileName: file.name,
+      });
     } catch (error) {
       if (error instanceof Error) {
         setJsonContent({
@@ -87,11 +91,22 @@ export default function Index() {
       </div>
     );
   } else {
-    return <ChatWithJson json={jsonContent.content} />;
+    return (
+      <ChatWithJson
+        json={jsonContent.content}
+        nameOfFile={jsonContent.fileName}
+      />
+    );
   }
 }
 
-function ChatWithJson({ json }: { json: string }) {
+function ChatWithJson({
+  json,
+  nameOfFile,
+}: {
+  json: string;
+  nameOfFile: string;
+}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { run } = useLoaderData() as any;
   const { openaiApiKey } = useLoaderData<typeof clientLoader>();
@@ -109,7 +124,8 @@ function ChatWithJson({ json }: { json: string }) {
   });
 
   return (
-    <div className="px-[10%] pt-4">
+    <div className="px-[10%] pt-4 flex flex-col gap-y-4">
+      <h3 className="text-2xl font-bold">Chatting with {nameOfFile} </h3>
       <div>
         <MessageList messages={messages} />
         {/* <pre>{JSON.stringify(messages, null, 2)}</pre> */}
