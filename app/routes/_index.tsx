@@ -10,6 +10,7 @@ import { Message, useChat } from "ai/react";
 import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils/style.ts";
+import { Markdown } from "~/components/ui/markdown";
 
 export const meta: MetaFunction = () => {
   return [
@@ -23,9 +24,9 @@ export const meta: MetaFunction = () => {
 
 type JsonContent =
   | {
-      type: "error";
-      error: string;
-    }
+    type: "error";
+    error: string;
+  }
   | null
   | { type: "success"; content: string };
 
@@ -144,7 +145,7 @@ function MessageList({ messages }: { messages: Message[] }) {
               <AvatarFallback>{ChatIcons[message.role]}</AvatarFallback>
             </Avatar>
             <div>
-              {message.content ? <p>{message.content}</p> : null}
+              {message.content ? <Markdown content={message.content} /> : null}
               {message.toolInvocations?.map((toolInvocation) => {
                 if (!("result" in toolInvocation)) {
                   return (
