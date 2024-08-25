@@ -1,7 +1,13 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import React, { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { createChatWithJsonFetch } from "~/lib/chatWithJson";
@@ -11,6 +17,7 @@ import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils/style.ts";
 import { Markdown } from "~/components/ui/markdown";
+import { Field } from "~/components/ui/field";
 
 export const meta: MetaFunction = () => {
   return [
@@ -38,13 +45,21 @@ export async function clientLoader() {
 }
 
 export default function Index() {
+  const { openaiApiKey } = useLoaderData<typeof clientLoader>();
   const [jsonContent, setJsonContent] = useState<JsonContent>(null);
 
-  async function onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.currentTarget.files;
+  async function onFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const files: FileList | null = e.currentTarget.file?.files ?? null;
+    const openaiApiKey = e.currentTarget.openaiApiKey?.value ?? null;
 
     if (!files || files.length === 0) {
       setJsonContent({ type: "error", error: "No file selected" });
+      return;
+    }
+
+    if (!openaiApiKey) {
+      setJsonContent({ type: "error", error: "No OpenAI API key provided" });
       return;
     }
 
@@ -54,6 +69,7 @@ export default function Index() {
 
     try {
       JSON.parse(content);
+      localStorage.setItem("openaiApiKey", openaiApiKey);
       setJsonContent({
         type: "success",
         content: content,
@@ -75,17 +91,29 @@ export default function Index() {
         <Card>
           <CardHeader>
             <CardTitle>Chat with JSON</CardTitle>
+            <CardDescription>
+              Choose a JSON file and enter your OpenAI API key to start
+              chatting.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-col gap-y-3">
-            <Label htmlFor="file">Upload JSON file</Label>
-            <Input
-              type="file"
-              name="file"
-              id="file"
-              onChange={onUploadFile}
-              accept=".json"
-            />
-            <p className="text-error">{jsonContent?.error}</p>
+          <CardContent>
+            <form onSubmit={onFormSubmit} className="flex flex-col gap-y-3">
+              <Field>
+                <Label htmlFor="file">Upload JSON file</Label>
+                <Input type="file" name="file" id="file" accept=".json" />
+              </Field>
+              <Field>
+                <Label htmlFor="openaiApiKey">OpenAI API key</Label>
+                <Input
+                  type="password"
+                  name="openaiApiKey"
+                  id="openaiApiKey"
+                  defaultValue={openaiApiKey ?? ""}
+                />
+              </Field>
+              <p className="text-error">{jsonContent?.error}</p>
+              <Button type="submit">Start chatting</Button>
+            </form>
           </CardContent>
         </Card>
       </div>
