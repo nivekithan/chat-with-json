@@ -35,7 +35,12 @@ type JsonContent =
       error: string;
     }
   | null
-  | { type: "success"; content: string; fileName: string };
+  | {
+      type: "success";
+      content: string;
+      fileName: string;
+      openaiApiKey: string;
+    };
 
 export async function clientLoader() {
   const { run } = await import("json_typegen_wasm");
@@ -74,6 +79,7 @@ export default function Index() {
         type: "success",
         content: content,
         fileName: file.name,
+        openaiApiKey,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -123,6 +129,7 @@ export default function Index() {
       <ChatWithJson
         json={jsonContent.content}
         nameOfFile={jsonContent.fileName}
+        openaiApiKey={jsonContent.openaiApiKey}
       />
     );
   }
@@ -131,13 +138,14 @@ export default function Index() {
 function ChatWithJson({
   json,
   nameOfFile,
+  openaiApiKey,
 }: {
   json: string;
   nameOfFile: string;
+  openaiApiKey: string;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { run } = useLoaderData() as any;
-  const { openaiApiKey } = useLoaderData<typeof clientLoader>();
 
   const schema = useGenerateJsonSchema({ jsonString: json, run });
 

@@ -59,16 +59,11 @@ export function createChatWithJsonFetch({
   json,
   schema,
 }: {
-  openaiApiKey: string | null;
+  openaiApiKey: string;
   schema: string;
   json: string;
 }) {
   const chatWithJsonFetch: typeof fetch = async (request, options) => {
-    if (!openaiApiKey) {
-      console.log("No openai api key");
-      return new Response("No openai api key");
-    }
-
     if (options) {
       const history = JSON.parse(options?.body?.toString() || "");
 
