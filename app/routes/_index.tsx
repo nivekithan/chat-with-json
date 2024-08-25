@@ -1,6 +1,6 @@
 import type { MetaFunction } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -151,12 +151,20 @@ function ChatWithJson({
     fetch: chatWithJsonFetch,
   });
 
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div className="px-[10%] pt-4 flex flex-col gap-y-4">
       <h3 className="text-2xl font-bold">Chatting with {nameOfFile} </h3>
       <div>
         <MessageList messages={messages} />
-        {/* <pre>{JSON.stringify(messages, null, 2)}</pre> */}
+        <div ref={bottomRef}></div>
         <div className="w-full h-[72px]"></div>
       </div>
 
