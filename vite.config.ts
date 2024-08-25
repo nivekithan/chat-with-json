@@ -7,8 +7,10 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import vitePluginWasm from "vite-plugin-wasm";
 
 export default defineConfig({
-  server: {
-    port: 3000,
+  esbuild: {
+    supported: {
+      "top-level-await": true,
+    },
   },
   plugins: [
     remixCloudflareDevProxy(),
